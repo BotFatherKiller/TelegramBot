@@ -9,7 +9,12 @@ import org.telegram.telegrambots.api.objects.User;
 
 public class Notifier implements Runnable {
 
-	BellSchedule bellSchedule = new BellSchedule();
+	public Notifier() {
+		super();
+		bellSchedule = new BellSchedule();
+	}
+
+	BellSchedule bellSchedule = null;
 	Calendar cl = Calendar.getInstance();
 	TelegramBot bot = new TelegramBot();
 	Date date = new Date();
@@ -19,19 +24,16 @@ public class Notifier implements Runnable {
 
 	@Override
 	public void run() {
-		//Отладочный вывод сообщения о запуске бота
-		String notification = "Бот запущен. Поток оповещений запущен (";
-		notification += "ID: " + Thread.currentThread().getId() + ").";
-		sendNotification(notification, TelegramBot.ADMIN_CHAT_ID);
-		
 		while (true) {
 			cl = Calendar.getInstance();
 			currentHour = cl.get(Calendar.HOUR);
 			currentMin = cl.get(Calendar.MINUTE);
 			//Если прозвенел звонок
-			if (Arrays.asList(bellSchedule).contains(new Bell(currentHour, currentMin))) {
-				// TODO: Проверка на наличие занятия у группы и рассылка уведомления каждому зарегистрированному пользователю
-				sendNotification("Звонок на пару! " + currentHour + ":" + currentMin, TelegramBot.ADMIN_CHAT_ID);
+			Bell myBell = new Bell(currentHour, currentMin);
+			for (Bell bl : bellSchedule.getSchedule()) {
+				if (bl.getHour() == myBell.getHour() && bl.getMinute() == myBell.getMinute()){
+					sendNotification("Звонок на пару! " + currentHour + ":" + currentMin, TelegramBot.ADMIN_CHAT_ID);
+				}
 			}
 			try {
 				Thread.sleep(60000);

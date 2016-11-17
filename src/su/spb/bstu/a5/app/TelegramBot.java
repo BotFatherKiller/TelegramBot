@@ -46,50 +46,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-
-		MySQLConnector mySqlConnector = new MySQLConnector();
-
-		Statement mysqlStatement = null;
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			mySqlConnector.connect();
-
-			mysqlStatement = mySqlConnector.getMysqlConnection().createStatement();
-			String sql;
-			sql = "SELECT count(id) FROM bot_users;";
-			ResultSet rs = mysqlStatement.executeQuery(sql);
-			if (rs.next()) {
-				int id = rs.getInt("count(id)");
-				nt.sendNotification("Количество зарегистрированных пользователей: " + id, TelegramBot.ADMIN_CHAT_ID);
-			}
-			rs.close();
-			mysqlStatement.close();
-
-			mysqlStatement = mySqlConnector.getMysqlConnection().createStatement();
-			sql = "SELECT count(id) FROM bot_users where active=1;";
-			rs = mysqlStatement.executeQuery(sql);
-			if (rs.next()) {
-				int id = rs.getInt("count(id)");
-				nt.sendNotification("Количество активных пользователей: " + id, TelegramBot.ADMIN_CHAT_ID);
-			}
-			rs.close();
-			mysqlStatement.close();
-
-			mySqlConnector.closeConnection();
-		} catch (SQLException se) {
-			se.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (mysqlStatement != null)
-					mysqlStatement.close();
-			} catch (SQLException se2) {
-			}
-			if (mySqlConnector.getMysqlConnection() != null)
-				mySqlConnector.closeConnection();
-		}
-
 	}
 
 	@Override
@@ -107,28 +63,21 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 		Message message = update.getMessage();
 		CallbackQuery query = update.getCallbackQuery();
+		
+		if (query != null){
+			System.out.println(query.getData());
+		}
+		
+		if (query != null && query.getData().equals("pause")){
+			System.out.println(query.getFrom().toString() + query.getFrom().getId().toString());
+			removeUser(query.getFrom(), query.getFrom().getId().toString());
+		}
 
 		if (query != null && TelegramBot.listGroup.groupList.contains(query.getData())) {
 			register(query.getFrom(), query.getFrom().getId().toString(), query.getData());
 		} else
 
 		if (message != null && message.hasText()) {
-			if (message.getText().equals("/отписаться")) {
-				removeUser(message.getFrom(), message.getChatId().toString());
-			} else if (message.getText().equals("/reboot")) {
-				nt.sendNotification("Бот будет перезагружен через несколько секунд.", TelegramBot.ADMIN_CHAT_ID);
-				String curDir = System.getProperty("user.dir");
-				try {
-					Runtime.getRuntime().exec("java -jar " + curDir + "\\telegrambot.jar &");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				System.exit(0);
-			} else if (message.getText().equals("/shutdown")) {
-
-				nt.sendNotification("Бот будет отключен через несколько секунд.", TelegramBot.ADMIN_CHAT_ID);
-				System.exit(0);
-			} else {
 				InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
 
 				List<List<InlineKeyboardButton>> listButton = new ArrayList<>();
@@ -145,7 +94,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 					sendMessage.enableMarkdown(true);
 					sendMessage.setChatId(message.getChatId().toString());
-					sendMessage.setText("Выберите вашу группу из списка доступных");
+					sendMessage.setText("Выберите вашу группу из списка доступных:");
 					sendMessage.setReplyMarkup(keyboard);
 					InlineKeyboardButton button = new InlineKeyboardButton();
 					button.setText(gr);
@@ -155,26 +104,40 @@ public class TelegramBot extends TelegramLongPollingBot {
 				}
 
 				keyboard.setKeyboard(listButton);
+				
 				try {
 					nt.bot.sendMessage(sendMessage);
 				} catch (TelegramApiException e) {
 					e.printStackTrace();
 				}
+				InlineKeyboardMarkup keyboard2 = new InlineKeyboardMarkup();
+
+				List<List<InlineKeyboardButton>> listButton2 = new ArrayList<>();
+				List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+				SendMessage sendMessage2 = new SendMessage();
+				sendMessage2.enableMarkdown(true);
+				sendMessage2.setChatId(message.getChatId().toString());
+				sendMessage2.setText("Для повторного вызова этого меню отправьте мне любое сообщение.\nДля отключения уведомлений воспользуйтесь кнопкой ниже");
+				sendMessage2.setReplyMarkup(keyboard2);
+				InlineKeyboardButton button2 = new InlineKeyboardButton();
+				button2.setText("приостановить");
+				button2.setCallbackData("pause");
+				listButton2.add(rowInline2);
+				rowInline2.add(button2);
+				keyboard2.setKeyboard(listButton2);
+				
+				try {
+					nt.bot.sendMessage(sendMessage2);
+				} catch (TelegramApiException e) {
+					e.printStackTrace();
+				}
 			}
-
 		}
-
-		TelegramBot.nt.sendNotification(
-				"\nЧтобы отписаться от уведомлений отправьте мне сообщение с текстом '/отписаться'.",
-				message.getChatId().toString());
-	}
 
 	private void register(User user, String chatID, String group) {
 		addUser(user.getUserName(), chatID, group);
 		TelegramBot.nt.sendNotification(
-				"Вы подписались на уведомления для группы " + group
-						+ ". Чтобы отписаться от уведомлений отправьте мне сообщение с текстом '/отписаться'.",
-				chatID.toString());
+				"Вы подписались на уведомления для группы " + group, chatID.toString());
 		TelegramBot.listUsers.updateActiveUsers();
 	}
 
@@ -205,7 +168,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 				mySqlConnector.closeConnection();
 		}
 		nt.updateUsers();
-		nt.sendNotification("Уведомления отключены. Отправьте мне номер своей группы чтобы включить их снова.", chatID);
+		nt.sendNotification("Уведомления отключены. Для того, чтобы снова включить уведомления отправьте мне любое сообщение.", chatID);
 	}
 
 	private void addUser(String username, String chatID, String group) {
