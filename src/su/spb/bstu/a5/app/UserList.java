@@ -8,7 +8,7 @@ import java.util.List;
 
 public class UserList {
 
-	private List<User> users = new ArrayList<User>();
+	public List<User> users = new ArrayList<User>();
 
 	public void updateActiveUsers() {
 

@@ -23,8 +23,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 	public static final String ADMIN_CHAT_ID = "-170187740";
 	private static Notifier nt = new Notifier();
-	private static UserList listUsers = new UserList();
-	private static ScheduleList listSchedule = new ScheduleList();
 	private static Groups listGroup = new Groups();
 
 	public static void main(String[] args) {
@@ -39,7 +37,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 		// Запускаем поток оповещений
 		tt.start();
 
-		listUsers.updateActiveUsers();
 		try {
 			telegramBotsApi.registerBot(new TelegramBot());
 		} catch (TelegramApiRequestException e1) {
@@ -138,7 +135,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 		addUser(user.getUserName(), chatID, group);
 		TelegramBot.nt.sendNotification(
 				"Вы подписались на уведомления для группы " + group, chatID.toString());
-		TelegramBot.listUsers.updateActiveUsers();
+		nt.updateUsers();
 	}
 
 	private void removeUser(User user, String chatID) {

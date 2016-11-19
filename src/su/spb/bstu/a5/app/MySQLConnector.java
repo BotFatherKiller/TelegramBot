@@ -8,7 +8,7 @@ public class MySQLConnector {
 
 	private Connection mysqlConnection = null;
 	String driver = "com.mysql.jdbc.Driver";
-	String database = "jdbc:mysql://195.133.146.90/a5new?autoReconnect=true&useSSL=false";
+	String database = "jdbc:mysql://195.133.146.90/a5new?autoReconnect=true&useSSL=false&characterEncoding=cp1251";
 	private String user = "root";
 	private String password = "easy4Rtz";
 

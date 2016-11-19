@@ -12,7 +12,7 @@ import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 
 public class ScheduleList {
 
-	List<Schedule> scheduleList = new ArrayList<Schedule>();
+	public List<Schedule> scheduleList = new ArrayList<Schedule>();
 
 	public ScheduleList() {
 				

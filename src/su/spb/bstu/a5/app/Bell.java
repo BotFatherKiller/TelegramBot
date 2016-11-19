@@ -1,5 +1,7 @@
 package su.spb.bstu.a5.app;
 
+
+
 public class Bell {
 
 	private int hour = 0;
