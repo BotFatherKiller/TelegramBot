@@ -1,4 +1,5 @@
 package su.spb.bstu.a5.app;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -31,23 +32,35 @@ public class Notifier implements Runnable {
 			cl = Calendar.getInstance();
 			currentHour = cl.get(Calendar.HOUR_OF_DAY);
 			currentMin = cl.get(Calendar.MINUTE);
-			//Если прозвенел звонок
+			// Если прозвенел звонок
 			Bell myBell = new Bell(currentHour, currentMin);
-				for (int i=0; i<this.bot.listUsers.users.size(); i++){
-					System.out.println(bot.listUsers.users.get(i).getUsername() + " | " + bot.listUsers.users.get(i).getChatID() + " | " + bot.listUsers.users.get(i).getGroupname());
-					for (int j=0; j<this.bot.listSchedule.scheduleList.size(); j++){
-						//System.out.println(this.bot.listUsers.users.get(i).getGroupname() + " | " + this.bot.listSchedule.scheduleList.get(j).getParty() + " | Часы из расписания: " + this.bot.listSchedule.scheduleList.get(j).getTime().getHours() + " | Часы сервера: " + myBell.getHour() + " | Минуты расписания: " + this.bot.listSchedule.scheduleList.get(j).getTime().getMinutes() + " | Часы сервера: " + myBell.getMinute());
-						if (this.bot.listUsers.users.get(i).getGroupname().equals(this.bot.listSchedule.scheduleList.get(j).getParty()) && this.bot.listSchedule.scheduleList.get(j).getTime().getHours() == myBell.getHour() &&  this.bot.listSchedule.scheduleList.get(j).getTime().getMinutes() == myBell.getMinute()){
-							if (this.bot.listSchedule.scheduleList.get(j).getChet().equals("Четная") && currentweek % 2 != 0){
-								sendNotification("Аудитория: " + this.bot.listSchedule.scheduleList.get(j).getAudit() + "\nПредмет: " + this.bot.listSchedule.scheduleList.get(j).getPredmet() + "\nВремя начала пары: " + currentHour + ":" + currentMin, this.bot.listUsers.users.get(i).getChatID());
-								
-							} else if (this.bot.listSchedule.scheduleList.get(j).getChet().equals("Нечетная") && currentweek % 2 == 0){
-								sendNotification("Аудитория: " + this.bot.listSchedule.scheduleList.get(j).getAudit() + "\nПредмет: " + this.bot.listSchedule.scheduleList.get(j).getPredmet() + "\nВремя начала пары: " + currentHour + ":" + currentMin, this.bot.listUsers.users.get(i).getChatID());
-							}
+			for (int i = 0; i < this.bot.listUsers.users.size(); i++) {
+				for (int j = 0; j < this.bot.listSchedule.scheduleList.size(); j++) {
+					if (this.bot.listUsers.users.get(i).getGroupname()
+							.equals(this.bot.listSchedule.scheduleList.get(j).getParty())
+							&& this.bot.listSchedule.scheduleList.get(j).getTime().getHours() == myBell.getHour()
+							&& this.bot.listSchedule.scheduleList.get(j).getTime().getMinutes() == myBell.getMinute()
+							&& this.bot.listSchedule.scheduleList.get(j).getWeekday() == Calendar.DAY_OF_WEEK) {
+						if (this.bot.listSchedule.scheduleList.get(j).getChet().equals("Четная")
+								&& currentweek % 2 != 0) {
+							sendNotification(
+									"Аудитория: " + this.bot.listSchedule.scheduleList.get(j).getAudit() + "\nПредмет: "
+											+ this.bot.listSchedule.scheduleList.get(j).getPredmet()
+											+ "\nВремя начала пары: " + currentHour + ":" + currentMin,
+									this.bot.listUsers.users.get(i).getChatID());
+
+						} else if (this.bot.listSchedule.scheduleList.get(j).getChet().equals("Нечетная")
+								&& currentweek % 2 == 0) {
+							sendNotification(
+									"Аудитория: " + this.bot.listSchedule.scheduleList.get(j).getAudit() + "\nПредмет: "
+											+ this.bot.listSchedule.scheduleList.get(j).getPredmet()
+											+ "\nВремя начала пары: " + currentHour + ":" + currentMin,
+									this.bot.listUsers.users.get(i).getChatID());
 						}
 					}
 				}
-		
+			}
+
 			try {
 				Thread.sleep(60000);
 			} catch (InterruptedException e) {
@@ -61,12 +74,12 @@ public class Notifier implements Runnable {
 		SendMessage sendMessage = new SendMessage();
 		sendMessage.enableMarkdown(true);
 		sendMessage.setChatId(chatID);
-		sendMessage.setText(text);	
-			try {
-				bot.sendMessage(sendMessage);
-			} catch (org.telegram.telegrambots.exceptions.TelegramApiException e) {
-				e.printStackTrace();
-			}
+		sendMessage.setText(text);
+		try {
+			bot.sendMessage(sendMessage);
+		} catch (org.telegram.telegrambots.exceptions.TelegramApiException e) {
+			e.printStackTrace();
+		}
 
 	}
 

@@ -26,7 +26,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 	private static Groups listGroup = new Groups();
 
 	public static void main(String[] args) {
-		System.out.println("Bot started..");
+		System.out.println("Bot started...");
 
 		TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
 
@@ -60,81 +60,110 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 		Message message = update.getMessage();
 		CallbackQuery query = update.getCallbackQuery();
-		
-		if (query != null){
-			System.out.println(query.getData());
-		}
-		
-		if (query != null && query.getData().equals("pause")){
-			System.out.println(query.getFrom().toString() + query.getFrom().getId().toString());
+
+		if (query != null && query.getData().equals("pause")) {
 			removeUser(query.getFrom(), query.getFrom().getId().toString());
+		}
+
+		if (query != null && query.getData().equals("play")) {
+			MySQLConnector mySqlConnector = new MySQLConnector();
+
+			Statement mysqlStatement = null;
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+				mySqlConnector.connect();
+				mysqlStatement = mySqlConnector.getMysqlConnection().createStatement();
+				String sql;
+				sql = "update bot_users set active=1  where chatID='" + query.getFrom().getId().toString() + "'";
+				mysqlStatement.executeUpdate(sql);
+				mysqlStatement.close();
+				mySqlConnector.closeConnection();
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					if (mysqlStatement != null)
+						mysqlStatement.close();
+				} catch (SQLException se2) {
+				}
+				if (mySqlConnector.getMysqlConnection() != null)
+					mySqlConnector.closeConnection();
+			}
+			
+			sendInlineKeboard(query.getFrom().getId().toString(), "Уведомления включены.", "Отписаться", "pause");
+			
+			nt.updateUsers();
+		}
+
+		if (message != null && message.getText().equals("/start")) {
+			InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+			List<List<InlineKeyboardButton>> listButton = new ArrayList<>();
+			List<InlineKeyboardButton> rowInline = new ArrayList<>();
+			SendMessage sendMessage = new SendMessage();
+			int i = 0;
+
+			for (String gr : TelegramBot.listGroup.groupList) {
+				if ((i % 4) == 0) {
+					listButton.add(rowInline);
+					rowInline = new ArrayList<>();
+				}
+
+				sendMessage.enableMarkdown(true);
+				sendMessage.setChatId(message.getChatId().toString());
+				sendMessage.setText("Выберите вашу группу из списка доступных:");
+				sendMessage.setReplyMarkup(keyboard);
+				InlineKeyboardButton button = new InlineKeyboardButton();
+				button.setText(gr);
+				button.setCallbackData(gr);
+				rowInline.add(button);
+				i++;
+			}
+
+			keyboard.setKeyboard(listButton);
+
+			try {
+				nt.bot.sendMessage(sendMessage);
+			} catch (TelegramApiException e) {
+				e.printStackTrace();
+			}
 		}
 
 		if (query != null && TelegramBot.listGroup.groupList.contains(query.getData())) {
 			register(query.getFrom(), query.getFrom().getId().toString(), query.getData());
-		} else
-
-		if (message != null && message.hasText()) {
-				InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
-
-				List<List<InlineKeyboardButton>> listButton = new ArrayList<>();
-				List<InlineKeyboardButton> rowInline = new ArrayList<>();
-				SendMessage sendMessage = new SendMessage();
-				int i = 0;
-
-				for (String gr : TelegramBot.listGroup.groupList) {
-
-					if ((i % 4) == 0) {
-						listButton.add(rowInline);
-						rowInline = new ArrayList<>();
-					}
-
-					sendMessage.enableMarkdown(true);
-					sendMessage.setChatId(message.getChatId().toString());
-					sendMessage.setText("Выберите вашу группу из списка доступных:");
-					sendMessage.setReplyMarkup(keyboard);
-					InlineKeyboardButton button = new InlineKeyboardButton();
-					button.setText(gr);
-					button.setCallbackData(gr);
-					rowInline.add(button);
-					i++;
-				}
-
-				keyboard.setKeyboard(listButton);
-				
-				try {
-					nt.bot.sendMessage(sendMessage);
-				} catch (TelegramApiException e) {
-					e.printStackTrace();
-				}
-				InlineKeyboardMarkup keyboard2 = new InlineKeyboardMarkup();
-
-				List<List<InlineKeyboardButton>> listButton2 = new ArrayList<>();
-				List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
-				SendMessage sendMessage2 = new SendMessage();
-				sendMessage2.enableMarkdown(true);
-				sendMessage2.setChatId(message.getChatId().toString());
-				sendMessage2.setText("Для повторного вызова этого меню отправьте мне любое сообщение.\nДля отключения уведомлений воспользуйтесь кнопкой ниже");
-				sendMessage2.setReplyMarkup(keyboard2);
-				InlineKeyboardButton button2 = new InlineKeyboardButton();
-				button2.setText("приостановить");
-				button2.setCallbackData("pause");
-				listButton2.add(rowInline2);
-				rowInline2.add(button2);
-				keyboard2.setKeyboard(listButton2);
-				
-				try {
-					nt.bot.sendMessage(sendMessage2);
-				} catch (TelegramApiException e) {
-					e.printStackTrace();
-				}
-			}
 		}
+
+	}
 
 	private void register(User user, String chatID, String group) {
 		addUser(user.getUserName(), chatID, group);
-		TelegramBot.nt.sendNotification(
-				"Вы подписались на уведомления для группы " + group, chatID.toString());
+
+		sendInlineKeboard(chatID, "Вы подписались на уведомления для группы " + group + ".", "Отписаться", "pause");
+	}
+
+	private void sendInlineKeboard(String chatID, String messageText, String buttonText, String callBackData) {
+		InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+
+		List<List<InlineKeyboardButton>> listButton = new ArrayList<>();
+		List<InlineKeyboardButton> rowInline = new ArrayList<>();
+		SendMessage sendMessage = new SendMessage();
+		sendMessage.enableMarkdown(true);
+		sendMessage.setChatId(chatID.toString());
+		sendMessage.setText(messageText);
+		sendMessage.setReplyMarkup(keyboard);
+		InlineKeyboardButton button = new InlineKeyboardButton();
+		button.setText(buttonText);
+		button.setCallbackData(callBackData);
+		listButton.add(rowInline);
+		rowInline.add(button);
+		keyboard.setKeyboard(listButton);
+
+		try {
+			nt.bot.sendMessage(sendMessage);
+		} catch (TelegramApiException e) {
+			e.printStackTrace();
+		}
 		nt.updateUsers();
 	}
 
@@ -165,7 +194,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 				mySqlConnector.closeConnection();
 		}
 		nt.updateUsers();
-		nt.sendNotification("Уведомления отключены. Для того, чтобы снова включить уведомления отправьте мне любое сообщение.", chatID);
+
+		sendInlineKeboard(chatID, "Уведомления отключены.", "Возобновить", "play");
 	}
 
 	private void addUser(String username, String chatID, String group) {

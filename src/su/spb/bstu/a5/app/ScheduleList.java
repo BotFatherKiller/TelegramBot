@@ -29,7 +29,7 @@ public class ScheduleList {
 			rs = mysqlStatement.executeQuery(sql);
 
 			while (rs.next()) {
-				scheduleList.add(new Schedule(rs.getInt("id"), rs.getString("chet"), rs.getString("weekday"),
+				scheduleList.add(new Schedule(rs.getInt("id"), rs.getString("chet"), rs.getInt("weekday"),
 						rs.getString("type"), rs.getString("predmet"), rs.getString("prepod"), rs.getTime("time1"),
 						rs.getString("party"), rs.getString("audit")));
 			}

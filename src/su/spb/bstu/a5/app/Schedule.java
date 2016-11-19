@@ -6,7 +6,7 @@ public class Schedule {
 
 	private int id = 0;
 	private String chet = new String("");
-	private String weekday = new String("");
+	private int weekday;
 	private String type = new String("");
 	private String predmet = new String("");
 	private String prepod = new String("");
@@ -14,7 +14,7 @@ public class Schedule {
 	private String party = new String("");
 	private String audit = new String("");
 	
-	public Schedule(int id, String chet, String weekday, String type, String predmet, String prepod, Time time,
+	public Schedule(int id, String chet, int weekday, String type, String predmet, String prepod, Time time,
 			String party, String audit) {
 		this.id = id;
 		this.chet = chet;
@@ -39,10 +39,10 @@ public class Schedule {
 	public void setChet(String chet) {
 		this.chet = chet;
 	}
-	public String getWeekday() {
+	public int getWeekday() {
 		return weekday;
 	}
-	public void setWeekday(String weekday) {
+	public void setWeekday(int weekday) {
 		this.weekday = weekday;
 	}
 	public String getType() {
