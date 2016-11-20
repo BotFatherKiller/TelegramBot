@@ -12,10 +12,8 @@ public class Notifier implements Runnable {
 
 	public Notifier() {
 		super();
-		bellSchedule = new BellSchedule();
 	}
 
-	BellSchedule bellSchedule = null;
 	Calendar cl = Calendar.getInstance();
 	BotNotifier bot = new BotNotifier();
 	Date date = new Date();
@@ -26,36 +24,42 @@ public class Notifier implements Runnable {
 	public void run() {
 		Calendar cl2 = Calendar.getInstance();
 		cl2.set(2016, 9, 1);
-		int currentweek = cl.get(Calendar.WEEK_OF_YEAR) - cl2.get(Calendar.WEEK_OF_YEAR);
+		int currentweek = cl.get(GregorianCalendar.WEEK_OF_YEAR) - cl2.get(GregorianCalendar.WEEK_OF_YEAR);
 		this.bot.listUsers.updateActiveUsers();
 		while (true) {
 			cl = Calendar.getInstance();
-			currentHour = cl.get(Calendar.HOUR_OF_DAY);
-			currentMin = cl.get(Calendar.MINUTE);
+			currentHour = cl.get(GregorianCalendar.HOUR_OF_DAY);
+			currentMin = cl.get(GregorianCalendar.MINUTE);
 			// Если прозвенел звонок
 			Bell myBell = new Bell(currentHour, currentMin);
 			for (int i = 0; i < this.bot.listUsers.users.size(); i++) {
 				for (int j = 0; j < this.bot.listSchedule.scheduleList.size(); j++) {
 					if (this.bot.listUsers.users.get(i).getGroupname()
-							.equals(this.bot.listSchedule.scheduleList.get(j).getParty())
-							&& this.bot.listSchedule.scheduleList.get(j).getTime().getHours() == myBell.getHour()
-							&& this.bot.listSchedule.scheduleList.get(j).getTime().getMinutes() == myBell.getMinute()
-							&& this.bot.listSchedule.scheduleList.get(j).getWeekday() == GregorianCalendar.DAY_OF_WEEK) {
-						if (this.bot.listSchedule.scheduleList.get(j).getChet().equals("Четная")
-								&& currentweek % 2 != 0) {
-							sendNotification(
-									"Аудитория: " + this.bot.listSchedule.scheduleList.get(j).getAudit() + "\nПредмет: "
-											+ this.bot.listSchedule.scheduleList.get(j).getPredmet()
-											+ "\nВремя начала пары: " + currentHour + ":" + currentMin,
-									this.bot.listUsers.users.get(i).getChatID());
+							.equals(this.bot.listSchedule.scheduleList.get(j).getParty())) {
+						if (this.bot.listSchedule.scheduleList.get(j).getTime().getHours() == myBell.getHour()
+								&& this.bot.listSchedule.scheduleList.get(j).getTime().getMinutes() == myBell
+										.getMinute()) {
+							if (this.bot.listSchedule.scheduleList.get(j)
+									.getWeekday() == GregorianCalendar.DAY_OF_WEEK) {
+								if (this.bot.listSchedule.scheduleList.get(j).getChet().equals("Четная")
+										&& currentweek % 2 != 0) {
+									sendNotification(
+											"Аудитория: " + this.bot.listSchedule.scheduleList.get(j).getAudit()
+													+ "\nПредмет: "
+													+ this.bot.listSchedule.scheduleList.get(j).getPredmet()
+													+ "\nВремя начала пары: " + currentHour + ":" + currentMin,
+											this.bot.listUsers.users.get(i).getChatID());
+								} else if (this.bot.listSchedule.scheduleList.get(j).getChet().equals("Нечетная")
+										&& currentweek % 2 == 0) {
+									sendNotification(
+											"Аудитория: " + this.bot.listSchedule.scheduleList.get(j).getAudit()
+													+ "\nПредмет: "
+													+ this.bot.listSchedule.scheduleList.get(j).getPredmet()
+													+ "\nВремя начала пары: " + currentHour + ":" + currentMin,
+											this.bot.listUsers.users.get(i).getChatID());
+								}
+							}
 
-						} else if (this.bot.listSchedule.scheduleList.get(j).getChet().equals("Нечетная")
-								&& currentweek % 2 == 0) {
-							sendNotification(
-									"Аудитория: " + this.bot.listSchedule.scheduleList.get(j).getAudit() + "\nПредмет: "
-											+ this.bot.listSchedule.scheduleList.get(j).getPredmet()
-											+ "\nВремя начала пары: " + currentHour + ":" + currentMin,
-									this.bot.listUsers.users.get(i).getChatID());
 						}
 					}
 				}
