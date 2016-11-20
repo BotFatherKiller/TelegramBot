@@ -40,7 +40,7 @@ public class Notifier implements Runnable {
 							.equals(this.bot.listSchedule.scheduleList.get(j).getParty())
 							&& this.bot.listSchedule.scheduleList.get(j).getTime().getHours() == myBell.getHour()
 							&& this.bot.listSchedule.scheduleList.get(j).getTime().getMinutes() == myBell.getMinute()
-							&& this.bot.listSchedule.scheduleList.get(j).getWeekday() == Calendar.DAY_OF_WEEK) {
+							&& this.bot.listSchedule.scheduleList.get(j).getWeekday() == GregorianCalendar.DAY_OF_WEEK) {
 						if (this.bot.listSchedule.scheduleList.get(j).getChet().equals("Четная")
 								&& currentweek % 2 != 0) {
 							sendNotification(
