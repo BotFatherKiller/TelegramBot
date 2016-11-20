@@ -10,7 +10,7 @@ public class Groups {
 
 	public List<String> groupList = new ArrayList<String>();
 
-	public Groups() {
+	public Groups(String faculty) {
 	
 		MySQLConnector mySqlConnector = new MySQLConnector();
 		Statement mysqlStatement = null;
@@ -20,7 +20,11 @@ public class Groups {
 
 			mysqlStatement = mySqlConnector.getMysqlConnection().createStatement();
 			String sql;
-			sql = "SELECT * FROM schedule_party";
+			if (!faculty.equals("")){
+				sql = "SELECT * FROM schedule_party WHERE faculty='"+faculty+"'";
+			} else {
+				sql = "SELECT * FROM schedule_party";
+			}
 			ResultSet rs = mysqlStatement.executeQuery(sql);
 			rs = mysqlStatement.executeQuery(sql);
 
